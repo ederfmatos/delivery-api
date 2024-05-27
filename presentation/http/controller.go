@@ -9,5 +9,5 @@ const (
 type Controller interface {
 	Path() string
 	Method() Method
-	HandleRequest(request Request) (*Response, error)
+	HandleRequest(request Request, writer ResponseWriter) error
 }

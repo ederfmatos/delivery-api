@@ -2,7 +2,6 @@ package http
 
 import (
 	"delivery-api/presentation/http"
-	"encoding/json"
 	"fmt"
 	"log"
 	http2 "net/http"
@@ -27,20 +26,13 @@ func (server *MuxHttpServer) Add(controller http.Controller) {
 }
 
 func (server *MuxHttpServer) handleRequest(writer http2.ResponseWriter, request *http2.Request, controller http.Controller) {
-	var responseBody interface{}
 	httpRequest := NewMuxHttpRequest(request)
-	httpResponse, err := controller.HandleRequest(httpRequest)
+	responseWriter := NewMuxResponseWriter(writer)
+	err := controller.HandleRequest(httpRequest, responseWriter)
 	if err != nil {
-		writer.WriteHeader(422)
-		responseBody = map[string]interface{}{"error": err.Error()}
-	} else {
-		writer.WriteHeader(httpResponse.Status)
-		if httpResponse.Body != nil {
-			responseBody, _ = json.Marshal(httpResponse.Body)
-		}
+		response := map[string]interface{}{"error": err.Error()}
+		_ = responseWriter.Status(422).WriteBody(response)
 	}
-	responseJson, _ := json.Marshal(responseBody)
-	_, _ = writer.Write(responseJson)
 }
 
 func (server *MuxHttpServer) Listen(port int32) {

@@ -21,12 +21,15 @@ func (controller CreateProductController) Method() http.Method {
 	return http.POST
 }
 
-func (controller CreateProductController) HandleRequest(request http.Request) (*http.Response, error) {
+func (controller CreateProductController) HandleRequest(request http.Request, writer http.ResponseWriter) error {
 	input := product.Input{
 		Name:     request.BodyFieldString("name"),
 		Price:    request.BodyFieldFloat("price"),
 		Category: request.BodyFieldString("category"),
 	}
 	err := controller.createProductUseCase.Execute(input)
-	return http.NoContent, err
+	if err == nil {
+		writer.StatusNoContent()
+	}
+	return err
 }
